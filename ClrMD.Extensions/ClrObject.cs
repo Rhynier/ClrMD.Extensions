@@ -114,6 +114,18 @@ namespace ClrMD.Extensions
             get { return this; }
         }
 
+        public dynamic _
+        {
+            get
+            {
+                if (HasSimpleValue)
+                {
+                    return SimpleValue;
+                }
+                return this;
+            }
+        }
+
         public ClrObject(ulong address, ClrType type, bool isInterior = false)
         {
             Address = address;
@@ -259,6 +271,10 @@ namespace ClrMD.Extensions
 
                 return Equals(other, SimpleValue);
             }
+            else if (other == null)
+            {
+                return IsNull();
+            }
 
             ClrObject clrOther = other as ClrObject;
 
@@ -286,12 +302,12 @@ namespace ClrMD.Extensions
 
         public static bool operator ==(ClrObject left, object right)
         {
-            return Equals(left, right);
+            return left.Equals(right);
         }
 
         public static bool operator !=(ClrObject left, object right)
         {
-            return !Equals(left, right);
+            return !left.Equals(right);
         }
 
         public static bool operator <(ClrObject left, object right)
