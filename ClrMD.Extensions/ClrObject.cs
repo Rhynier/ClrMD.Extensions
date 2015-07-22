@@ -20,7 +20,8 @@ namespace ClrMD.Extensions
         private const string ToStringFieldIndentation = "  ";
         private static readonly Regex s_fieldNameRegex = new Regex("^<([^>]+)>k__BackingField$", RegexOptions.Compiled);
 
-        private ITypeDeobfuscator m_deobfuscator;
+        private readonly ITypeDeobfuscator m_deobfuscator;
+        private readonly TypeVisualizer m_visualizer;
 
         public ulong Address { get; private set; }
 
@@ -114,6 +115,11 @@ namespace ClrMD.Extensions
             get { return this; }
         }
 
+        public object Visualizer
+        {
+            get { return m_visualizer.GetValue(this); }
+        }
+
         public dynamic _
         {
             get
@@ -136,6 +142,8 @@ namespace ClrMD.Extensions
                 m_deobfuscator = new DummyTypeDeobfuscator(type.Name);
             else
                 m_deobfuscator = ClrMDSession.Current.GetTypeDeobfuscator(type);
+
+            m_visualizer = TypeVisualizer.TryGetVisualizer(this);
         }
 
         public bool IsNull()
@@ -780,6 +788,9 @@ namespace ClrMD.Extensions
 
                 if (!IsNull())
                 {
+                    if (m_visualizer != null)
+                        yield return "Visualizer";
+
                     foreach (var field in Fields)
                         yield return GetFieldName(field.Name);
                 }
@@ -821,6 +832,9 @@ namespace ClrMD.Extensions
 
                 if (!IsNull())
                 {
+                    if (m_visualizer != null)
+                        yield return typeof(object);
+
                     for (int i = 0; i < Type.Fields.Count; ++i)
                     {
                         if (LinqPadExtensions.SmartNavigation)
@@ -858,6 +872,9 @@ namespace ClrMD.Extensions
 
                 if (!IsNull())
                 {
+                    if (m_visualizer != null)
+                        yield return m_visualizer.GetValue(this);
+
                     foreach (ClrInstanceField field in Type.Fields)
                     {
                         if (LinqPadExtensions.SmartNavigation)
